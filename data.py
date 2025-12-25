@@ -11,7 +11,6 @@ This program utilizes Multiple Linear Regression and basic Machine Learning to p
 
 import pandas as pd
 import numpy as np
-import matplotlib.pyplot as plt
 from sklearn.linear_model import LinearRegression
 import pickle
 import streamlit as st
