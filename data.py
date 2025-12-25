@@ -1,80 +1,88 @@
+"""
+EXAM SCORE PREDICTION MODEL
+
+This program is a simple model that predicts the exam score from four different factors.
+The four factors are Study Hours, Sleep Hours, Class Attendance, and Age.
+Although, there are a lot of factors that can contribute to the outcome of the score and this program
+is only used strictly for educational and entertainment purposes.
+
+This program utilizes Multiple Linear Regression and basic Machine Learning to predict exam scores.
+"""
+
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+from sklearn.linear_model import LinearRegression
+import pickle
 
-print(pd.__version__)
+# This class is used to determine whether the given input is above, below, or equal to the average
+def CompareToMean(name, given, mean):
+    if given > mean:
+        print("Your", name, "is above the average -- ", mean)
+    elif given == mean:
+        print("Your", name, "is the same as the average -- ", mean)
+    else:
+        print("Your", name, "is below the average -- ", mean)
 
+#Reads the csv file where all data used is located
 df = pd.read_csv("Exam_Score_Prediction.csv")
 
-#Shows the initial data set
-print("Initial dataset:")
-print(df.head()) 
+#Shows a few data points from the data set
+print("Source Dataset: ")
+print(df.head())
 
-#mean of study hours
-mean_studyhours = df['study_hours'].mean()
-print("The average study hours is: ", mean_studyhours)
+#Disclaimer Message for the user
+print("Disclaimer! This program will not guarantee result and is used strictly for educational purposes only." \
+"Any predictions given may be taken as a bench mark but not a guaranteed score." \
+"Please do not solely rely on this program to predict your score since this program will not give guaranteed results.")
 
-#sorts the Study Hours data in ascending order
-sort_studyhours = df.sort_values(by='study_hours', ascending=True)
-
-#study hours minimum and maximum value
-minimum = df['study_hours'].min()
-maximum = df['study_hours'].max()
-
-print("The minimum study hours is: ", minimum, " The maximum study hours is: ", maximum)
-
-#Outliers using the IQR method
-Q1 = df['study_hours'].quantile(0.25)
-Q3 = df['study_hours'].quantile(0.75)
-IQR = Q3 - Q1
-
-print("The first quartile is: ", Q1)
-print("The third quartile is: ", Q3)
-print("The interquartile is: ", IQR)
-
-lower_bound = Q1 - (1.5*IQR)
-upper_bound = Q3 + (1.5*IQR)
-
-outliers = df[(df['study_hours'] < lower_bound) | (df['study_hours'] > upper_bound)]
-print('The outliers are in rows: ', outliers)
-
-#mean of exam_score
+#mean of the outcome
 mean_examscore = df['exam_score'].mean()
-print("The average exam score is: ", mean_examscore)
 
-#find correlation between examscore and study hours
-studyhoursXexamscore_corr = df['study_hours'].corr(df['exam_score'])
-print("The correlation between study hours and exam score is: ", studyhoursXexamscore_corr)
+#mean of the predictors
+mean_studyhours = round(df['study_hours'].mean(), 2)
+mean_sleephours = round(df['sleep_hours'].mean(), 2)
+mean_age = round(df['age'].mean(), 2)
+mean_attendance = round(df['class_attendance'].mean(), 2)
 
-#Linear Regression
-X = df['study_hours']
-Y = df['exam_score']
+#Assigning the predictors and the outcome
+X = df[['sleep_hours', 'study_hours', 'class_attendance', 'age']] #Predictors
+Y = df['exam_score'] #Outcome
 
-m, b = np.polyfit(X, Y, 1)
+#Uses scikit learn to create multiple regression line
+ModelType = LinearRegression() #Type of regression line used
+ModelType.fit(X, Y) #creates the regression equation
 
-regression_line = m*X + b
+#calculations for predictions
+ModelType.coef_ #calculates the coefficient of each predictors
+ModelType.intercept_ #calsulates the intercept of the equation (where all balues are zero)
 
-plt.scatter(X, Y)
-plt.plot(X, regression_line)
-plt.xlabel('Study Hours')
-plt.ylabel('Exam Scores')
-plt.title('Study Hours and Exam Scores correlation')
-plt.plot(X, regression_line, label='Line of Best Fit')
-#plt.show()
+#Save the Trained Model
+with open("PredictionModel.pk1", "wb") as f:
+    pickle.dump(ModelType, f)
 
-predict_hours = int(input("How many hours will you be studying? "))
+#Open the Trained Model
+with open("PredictionModel.pk1", "rb") as f:
+    ModelType = pickle.load(f)
 
-predict_score = round(m*predict_hours + b, 2)
+#asks user input for each new data
+sleep = int(input('How many hours did you sleep? ')) 
+study = int(input('How many hours did you study? '))
+attend = int(input('How many classes did you attend (whole semester as a percentage [value only])? '))
+age = int(input('How old are you? '))
 
-print("If you study for ", predict_hours, " hours, then, on average, you can get an estimated score of ", predict_score, 'percent')
+#creates a data frame of the given data
+data_given = pd.DataFrame([[sleep, study, attend, age]], columns=["sleep_hours","study_hours", "class_attendance", "age"])
 
-if predict_hours > mean_studyhours:
-    print("You study more than the average study hours")
-else:
-    print("You study less than the average hours")
+#calculations for the actual prediction
+predicted_score = ModelType.predict(data_given) #calculates the predicted score
+predicted = round(predicted_score[0], 2) #rounds the predicted score and removes unnecessary brackets around outcome
 
-if predict_score > mean_examscore:
-    print("Your score is higher than the average")
-else:
-    print("Your score is lower than the average")
+#prints out the prediction
+print('You predicted score according to the data you have given is', predicted, 'percent')
 
+#prints comparison with the given data and mean to determine whether they are above, below, or equal to the average
+CompareToMean("SLEEP HOURS", sleep, mean_sleephours)
+CompareToMean("STUDY HOURS", study, mean_studyhours)
+CompareToMean("ATTENDANCE", attend, mean_attendance)
+CompareToMean("AGE", age, mean_age)
