@@ -17,11 +17,11 @@ import pickle
 # This class is used to determine whether the given input is above, below, or equal to the average
 def CompareToMean(name, given, mean):
     if given > mean:
-        print("Your", name, "\nis above the average -- ", mean)
+        print("\nYour", name, "is above the average -- ", mean)
     elif given == mean:
-        print("Your", name, "\nis the same as the average -- ", mean)
+        print("\nYour", name, "is the same as the average -- ", mean)
     else:
-        print("Your", name, "\nis below the average -- ", mean)
+        print("\nYour", name, "is below the average -- ", mean)
 
 #Reads the csv file where all data used is located
 df = pd.read_csv("Exam_Score_Prediction.csv")
@@ -78,7 +78,10 @@ predicted_score = ModelType.predict(data_given) #calculates the predicted score
 predicted = round(predicted_score[0], 2) #rounds the predicted score and removes unnecessary brackets around outcome
 
 #prints out the prediction
-print('You predicted score according to the data you have given is', predicted, 'percent')
+print('\nYou predicted score according to the data you have given is', predicted, 'percent')
+
+if predicted > 100:
+    print("This result may be unrealistic")
 
 #prints comparison with the given data and mean to determine whether they are above, below, or equal to the average
 CompareToMean("SLEEP HOURS", sleep, mean_sleephours)
